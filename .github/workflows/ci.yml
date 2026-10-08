@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  make:
+    name: Makefile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+
+      - name: 格式检查
+        run: |
+          make format
+          if ! git diff --quiet; then
+            echo "代码未通过 clang-format，请运行 make format 后提交"
+            git diff
+            exit 1
+          fi
+
+      - name: Debug 构建
+        run: make debug
+
+      - name: 运行测试
+        run: make test
+
+      - name: Sanitizer 测试
+        run: |
+          make clean
+          make SANITIZE=1 test
+
+      - name: Release 构建
+        run: make release
+
+      - name: 运行主程序
+        run: ./linglan
+
+      - name: 严格警告 + 全量检查
+        run: make check
+
+  cmake:
+    name: CMake
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 配置
+        run: cmake -S . -B build
+
+      - name: 构建
+        run: cmake --build build --parallel
+
+      - name: 测试
+        run: cd build && ctest --output-on-failure
+
+      - name: 运行主程序
+        run: ./build/linglan
+
+      - name: Sanitizer 配置
+        run: cmake -S . -B build-san -DENABLE_SANITIZERS=ON
+
+      - name: Sanitizer 构建
+        run: cmake --build build-san --parallel
+
+      - name: Sanitizer 测试
+        run: cd build-san && ctest --output-on-failure
+

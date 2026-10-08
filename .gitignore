@@ -1,13 +1,14 @@
-# 构建产物
 build/
+build-san/
 obj/
+
 *.o
 *.d
 
-# 可执行文件
-linglan
+/linglan
+/test_*
 
-# 编辑器
 *.swp
 .vscode/
 .idea/
+
