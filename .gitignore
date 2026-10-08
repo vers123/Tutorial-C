@@ -1,0 +1,13 @@
+# 构建产物
+build/
+obj/
+*.o
+*.d
+
+# 可执行文件
+linglan
+
+# 编辑器
+*.swp
+.vscode/
+.idea/
